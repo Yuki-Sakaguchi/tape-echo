@@ -206,13 +206,31 @@ body {
   display: block;
 }
 
+/* ===== ゾーンを区切る共通パネル ===== */
+.panel {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.1));
+  border: 1px solid var(--panel-line);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 2px 6px rgba(0, 0, 0, 0.12) inset;
+}
+.panel-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+}
+
 /* ===== つまみ ===== */
 .knob-row {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  margin-top: 22px;
-  padding: 0 4px;
 }
 
 .knob {
@@ -270,19 +288,18 @@ body {
   text-align: center;
 }
 
-/* ===== 操作 ===== */
-.control-row {
+/* ===== 操作デッキ ===== */
+.transport {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 24px;
+  gap: 14px;
 }
 .play-btn {
   flex: 1 1 auto;
   font-size: 16px;
   font-weight: 800;
   letter-spacing: 2px;
-  padding: 14px;
+  padding: 16px;
   border: none;
   border-radius: 10px;
   color: #fff7ec;
@@ -302,16 +319,20 @@ body {
 .play-btn.playing {
   background: linear-gradient(180deg, var(--accent), #8c3a1f);
 }
-.volume-knob {
+
+/* 出力（音量・ミュート）を1セットに */
+.output {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-.volume-knob .knob-label {
+.output .knob-label {
   font-size: 9px;
 }
 .mute-btn {
-  flex: 0 0 auto;
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   font-size: 20px;
   border: none;
   border-radius: 10px;
@@ -320,97 +341,130 @@ body {
     0 1px 0 rgba(255, 255, 255, 0.4) inset,
     0 3px 8px rgba(0, 0, 0, 0.3);
   cursor: pointer;
+  transition: transform 0.05s;
 }
 .mute-btn:active {
   transform: translateY(1px);
 }
+.mute-btn.muted {
+  background: linear-gradient(180deg, #b0a487, #968a6c);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.3) inset,
+    0 2px 5px rgba(0, 0, 0, 0.35) inset;
+}
 
-/* ===== 雨レイヤー ===== */
-.rain-row {
+/* デッキ内の仕切り */
+.deck-divider {
+  height: 1px;
+  margin: 14px 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 0, 0, 0.18) 20%,
+    rgba(0, 0, 0, 0.18) 80%,
+    transparent
+  );
+}
+
+.deck-bottom {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-top: 18px;
-  padding: 12px 14px;
-  background: rgba(0, 0, 0, 0.06);
-  border-radius: 10px;
-  border: 1px solid var(--panel-line);
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px 18px;
 }
-.rain-toggle {
+
+/* 雨：ビンテージのランプ式スイッチ＋強さツマミ */
+.rain-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rain-switch {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: 9px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 2px;
-  padding: 10px 16px;
+  color: var(--ink-soft);
+  padding: 11px 16px;
   border-radius: 8px;
   border: 1px solid var(--panel-line);
   background: linear-gradient(180deg, #cfc4ac, #b3a685);
-  color: var(--ink-soft);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 2px 5px rgba(0, 0, 0, 0.25);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: transform 0.05s, color 0.2s;
 }
-.rain-toggle .rain-icon {
-  font-size: 16px;
-  filter: grayscale(1) opacity(0.6);
+.rain-switch:active {
+  transform: translateY(1px);
 }
-.rain-toggle .rain-state {
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.15);
+/* スイッチのランプ（消灯＝暗い、点灯＝アンバー）：電源ランプと統一 */
+.rain-lamp {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #6e3b2a;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2) inset;
+  transition: all 0.3s;
 }
-.rain-toggle.on {
-  background: linear-gradient(180deg, #3f5d7a, #2b4055);
-  color: #eaf2fb;
-  border-color: #1f2e3d;
-  box-shadow: 0 0 12px rgba(90, 140, 190, 0.4);
+.rain-switch.on {
+  color: var(--ink);
+  background: linear-gradient(180deg, #e7dcc2, #cdbf9d);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 2px 5px rgba(0, 0, 0, 0.25),
+    0 0 8px rgba(255, 138, 60, 0.25);
 }
-.rain-toggle.on .rain-icon {
-  filter: none;
+.rain-switch.on .rain-lamp {
+  background: var(--amber);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.2) inset,
+    0 0 8px 1px var(--amber-glow);
 }
-.rain-toggle.on .rain-state {
-  background: rgba(255, 255, 255, 0.2);
-}
-.rain-knob {
+.rain-amount {
   transition: opacity 0.2s;
 }
-.rain-knob.disabled {
+.rain-amount .knob-label {
+  font-size: 9px;
+}
+.rain-amount.disabled {
   opacity: 0.4;
   pointer-events: none;
 }
 
-/* ===== プリセット ===== */
-.preset-row {
+/* プリセット */
+.presets {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px dashed var(--panel-line);
+  gap: 10px;
 }
-.preset-label {
-  font-size: 10px;
+.presets-label {
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 2px;
   color: var(--ink-soft);
-  margin-right: 4px;
+}
+.presets-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
 }
 .preset-btn {
   font-size: 13px;
   font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 20px;
+  padding: 7px 13px;
+  border-radius: 18px;
   border: 1px solid var(--panel-line);
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.3);
   color: var(--ink);
   cursor: pointer;
   transition: all 0.15s;
 }
 .preset-btn:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.55);
 }
 .preset-btn.active {
   background: var(--wood);
