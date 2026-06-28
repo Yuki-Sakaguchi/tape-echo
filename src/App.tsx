@@ -1,7 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AmbientEngine, DEFAULT_PARAMS, type EngineParams } from './audio/engine'
+import { makeLoopWav } from './audio/loop'
 import { PRESETS } from './audio/presets'
 import { TapeEcho } from './components/TapeEcho'
+
+/** Blob をファイルとしてダウンロードさせる。 */
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+
+/** ファイル名用のタイムスタンプ（YYYYMMDD-HHMMSS）。 */
+function timestamp(): string {
+  return new Date().toISOString().slice(0, 19).replace(/[-:]/g, '').replace('T', '-')
+}
 
 export default function App() {
   // エンジンは1つだけ。再レンダーで作り直さないよう ref で保持。
@@ -15,6 +33,10 @@ export default function App() {
   const [raining, setRaining] = useState(false)
   const [rainLevel, setRainLevel] = useState(0.5)
   const [volume, setVolume] = useState(0.8)
+  const [recording, setRecording] = useState(false)
+  const [recSeconds, setRecSeconds] = useState(0)
+  const [processing, setProcessing] = useState(false)
+  const recTimerRef = useRef<number | null>(null)
 
   // アンマウント時に確実に停止
   useEffect(() => {
@@ -22,6 +44,7 @@ export default function App() {
     return () => {
       engine?.stop()
       engine?.setRain(false)
+      if (recTimerRef.current !== null) clearInterval(recTimerRef.current)
     }
   }, [])
 
@@ -86,6 +109,40 @@ export default function App() {
     engineRef.current!.setVolume(v)
   }, [])
 
+  const toggleRecord = useCallback(async () => {
+    const engine = engineRef.current!
+    if (engine.isRecording) {
+      // 停止 → 自動でループ素材(WAV)に加工してダウンロード
+      if (recTimerRef.current !== null) {
+        clearInterval(recTimerRef.current)
+        recTimerRef.current = null
+      }
+      setRecording(false)
+      setProcessing(true)
+      const result = await engine.stopRecording()
+      if (result) {
+        const stamp = timestamp()
+        try {
+          const ctx = engine.getAudioContext()
+          if (!ctx) throw new Error('no audio context')
+          const wav = await makeLoopWav(result.blob, ctx)
+          downloadBlob(wav, `tape-echo-loop-${stamp}.wav`)
+        } catch {
+          // 加工に失敗したら素の録音をそのまま落とす
+          downloadBlob(result.blob, `tape-echo-${stamp}.${result.ext}`)
+        }
+      }
+      setProcessing(false)
+    } else {
+      // 開始
+      if (engine.startRecording()) {
+        setRecording(true)
+        setRecSeconds(0)
+        recTimerRef.current = window.setInterval(() => setRecSeconds((s) => s + 1), 1000)
+      }
+    }
+  }, [])
+
   return (
     <div className="stage">
       <TapeEcho
@@ -103,6 +160,10 @@ export default function App() {
         onToggleRain={toggleRain}
         onRainLevel={handleRainLevel}
         onVolume={handleVolume}
+        recording={recording}
+        recSeconds={recSeconds}
+        processing={processing}
+        onToggleRecord={toggleRecord}
       />
       <p className="hint">
         ▶ PLAY で再生。ツマミを回すと音のテイストが変わります（ドラッグ／ホイール）。

@@ -51,8 +51,16 @@ export class AmbientEngine {
   private muted = false
   private volume = 0.8 // 全体ボリューム（0..1）
 
-  // 出力段（音楽・雨の両方がここを通る。ボリューム・ミュートはここで掛ける）
+  // 出力段：sources → volumeGain（音量）→ muteGain（ミュート）→ destination。
+  // 録音は volumeGain から分岐するため、ミュート（モニター用）の影響を受けない。
+  private volumeGain: GainNode | null = null
   private muteGain: GainNode | null = null
+
+  // 録音（MediaRecorder）
+  private recordDest: MediaStreamAudioDestinationNode | null = null
+  private recorder: MediaRecorder | null = null
+  private recChunks: Blob[] = []
+  private recMime = ''
 
   // 音楽の永続ノード（再生中に値だけ書き換える）
   private master: GainNode | null = null
@@ -79,6 +87,15 @@ export class AmbientEngine {
     return this.rainOn
   }
 
+  get isRecording() {
+    return this.recorder?.state === 'recording'
+  }
+
+  /** デコード等に使う AudioContext を返す（無ければ生成）。 */
+  getAudioContext(): AudioContext | null {
+    return this.getCtx()
+  }
+
   /** ルート周波数（pitch から算出）。 */
   private get root() {
     return lerp(150, 300, this.params.pitch)
@@ -97,14 +114,17 @@ export class AmbientEngine {
     return this.ctx
   }
 
-  /** 出力段（ミュート用）を用意する。音楽・雨の両方がここに繋がる。 */
+  /** 出力段を用意し、音源を繋ぐノード(volumeGain)を返す。音楽・雨の両方がここに繋がる。 */
   private ensureOutput(ac: AudioContext): GainNode {
     if (!this.muteGain) {
       this.muteGain = ac.createGain()
-      this.muteGain.gain.value = this.muted ? 0 : this.volume
+      this.muteGain.gain.value = this.muted ? 0 : 1
       this.muteGain.connect(ac.destination)
+      this.volumeGain = ac.createGain()
+      this.volumeGain.gain.value = this.volume
+      this.volumeGain.connect(this.muteGain)
     }
-    return this.muteGain
+    return this.volumeGain!
   }
 
   /** 再生開始。ブラウザの制限によりユーザー操作後に呼ぶこと。 */
@@ -171,21 +191,68 @@ export class AmbientEngine {
   setMuted(m: boolean) {
     this.muted = m
     const ac = this.ctx
-    // 音楽・雨ともに出力段(muteGain)でまとめてミュートする
+    // モニター用のミュート（録音には影響しない）
     if (this.muteGain && ac) {
       const now = ac.currentTime
       this.muteGain.gain.cancelScheduledValues(now)
-      this.muteGain.gain.setTargetAtTime(m ? 0 : this.volume, now, 0.4)
+      this.muteGain.gain.setTargetAtTime(m ? 0 : 1, now, 0.4)
     }
   }
 
-  /** 全体ボリューム（0..1）。音楽・雨をまとめて調整する。 */
+  /** 全体ボリューム（0..1）。音楽・雨をまとめて調整する（録音にも反映）。 */
   setVolume(v: number) {
     this.volume = Math.min(1, Math.max(0, v))
     const ac = this.ctx
-    if (this.muteGain && ac && !this.muted) {
-      this.muteGain.gain.setTargetAtTime(this.volume, ac.currentTime, 0.15)
+    if (this.volumeGain && ac) {
+      this.volumeGain.gain.setTargetAtTime(this.volume, ac.currentTime, 0.15)
     }
+  }
+
+  // ============================================================
+  // 録音（MediaRecorder で出力をキャプチャ → ダウンロード）
+  // ============================================================
+
+  /** 録音開始。鳴っている音（音量適用後・ミュート前）をそのまま録る。 */
+  startRecording(): boolean {
+    if (typeof MediaRecorder === 'undefined') return false
+    const ac = this.getCtx()
+    if (!ac) return false
+    const out = this.ensureOutput(ac)
+    if (!this.recordDest) {
+      this.recordDest = ac.createMediaStreamDestination()
+      out.connect(this.recordDest)
+    }
+    if (this.recorder?.state === 'recording') return true
+
+    // 環境がサポートする形式を選ぶ（Chrome=webm/opus, Safari=mp4 など）
+    const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus']
+    this.recMime = candidates.find((m) => MediaRecorder.isTypeSupported(m)) ?? ''
+    this.recChunks = []
+    this.recorder = this.recMime
+      ? new MediaRecorder(this.recordDest.stream, { mimeType: this.recMime })
+      : new MediaRecorder(this.recordDest.stream)
+    this.recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) this.recChunks.push(e.data)
+    }
+    this.recorder.start()
+    return true
+  }
+
+  /** 録音停止。録れた音声を Blob（と拡張子）で返す。録音していなければ null。 */
+  stopRecording(): Promise<{ blob: Blob; ext: string } | null> {
+    const rec = this.recorder
+    if (!rec || rec.state !== 'recording') return Promise.resolve(null)
+    return new Promise((resolve) => {
+      rec.onstop = () => {
+        const type = this.recMime || 'audio/webm'
+        const blob = new Blob(this.recChunks, { type })
+        this.recChunks = []
+        this.recorder = null
+        const ext = type.includes('mp4') ? 'm4a' : type.includes('ogg') ? 'ogg' : 'webm'
+        resolve({ blob, ext })
+      }
+      rec.stop()
+    })
   }
 
   /** パラメータを更新。再生中ならライブで反映する。 */

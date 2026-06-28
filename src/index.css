@@ -320,6 +320,58 @@ body {
   background: linear-gradient(180deg, var(--accent), #8c3a1f);
 }
 
+/* 録音ボタン（押下で開始→停止でダウンロード） */
+.rec-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 78px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  font-variant-numeric: tabular-nums;
+  padding: 16px 12px;
+  border: none;
+  border-radius: 10px;
+  color: var(--ink);
+  background: linear-gradient(180deg, #cfc4ac, #b3a685);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 3px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.05s;
+}
+.rec-btn:active {
+  transform: translateY(1px);
+}
+.rec-btn:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+.rec-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #8c3a2a;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15) inset;
+}
+.rec-btn.recording {
+  color: #fff2ee;
+  background: linear-gradient(180deg, #c2562f, #8c3a1f);
+}
+.rec-btn.recording .rec-dot {
+  background: #ff5a4d;
+  box-shadow: 0 0 8px 1px rgba(255, 90, 77, 0.9);
+  animation: rec-pulse 1s ease-in-out infinite;
+}
+@keyframes rec-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
 /* 出力（音量・ミュート）を1セットに */
 .output {
   flex: 0 0 auto;

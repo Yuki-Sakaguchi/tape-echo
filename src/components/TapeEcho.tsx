@@ -19,6 +19,17 @@ interface TapeEchoProps {
   onToggleRain: () => void
   onRainLevel: (v: number) => void
   onVolume: (v: number) => void
+  recording: boolean
+  recSeconds: number
+  processing: boolean
+  onToggleRecord: () => void
+}
+
+/** 秒数を mm:ss に整形する。 */
+function fmtTime(sec: number): string {
+  const m = Math.floor(sec / 60)
+  const s = sec % 60
+  return `${m}:${String(s).padStart(2, '0')}`
 }
 
 /** ビンテージ・テープエコー風の本体。機能ごとにゾーン分けして配置する。 */
@@ -37,6 +48,10 @@ export function TapeEcho({
   onToggleRain,
   onRainLevel,
   onVolume,
+  recording,
+  recSeconds,
+  processing,
+  onToggleRecord,
 }: TapeEchoProps) {
   const moodCount = SCALES.length
   const moodIndex = params.mood
@@ -90,6 +105,21 @@ export function TapeEcho({
         <div className="transport">
           <button className={`play-btn ${playing ? 'playing' : ''}`} onClick={onTogglePlay}>
             {playing ? '■ STOP' : '▶ PLAY'}
+          </button>
+          <button
+            className={`rec-btn ${recording ? 'recording' : ''}`}
+            onClick={onToggleRecord}
+            disabled={processing}
+            title={
+              processing
+                ? 'ループに書き出し中'
+                : recording
+                  ? '録音停止してループWAVをダウンロード'
+                  : '録音開始'
+            }
+          >
+            <span className="rec-dot" />
+            {processing ? '…' : recording ? fmtTime(recSeconds) : 'REC'}
           </button>
           <div className="output">
             <Knob label="VOLUME" size={44} value={volume} onChange={onVolume} />
