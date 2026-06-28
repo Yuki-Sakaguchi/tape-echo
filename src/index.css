@@ -1,0 +1,427 @@
+:root {
+  /* ビンテージ機材のカラーパレット（クリーム筐体＋木目＋アンバーのランプ） */
+  --bg-1: #2a2622;
+  --bg-2: #15120f;
+  --panel: #d8cdb6;
+  --panel-dark: #c2b598;
+  --panel-line: #b0a384;
+  --wood: #6b4a2f;
+  --wood-dark: #4e351f;
+  --ink: #3a342b;
+  --ink-soft: #6b6253;
+  --amber: #ffb454;
+  --amber-glow: #ff8a3c;
+  --metal: #9a958c;
+  --metal-dark: #5c574e;
+  --accent: #c2562f;
+  --tape: #3b2f25;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+  background: radial-gradient(120% 120% at 50% 0%, var(--bg-1), var(--bg-2));
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.stage {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 32px 16px;
+}
+
+/* ===== 本体 ===== */
+.device {
+  width: min(640px, 94vw);
+  background: linear-gradient(180deg, var(--panel), var(--panel-dark));
+  border-radius: 18px;
+  padding: 22px 24px 26px;
+  border: 1px solid var(--panel-line);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 -2px 8px rgba(0, 0, 0, 0.15) inset,
+    0 24px 50px rgba(0, 0, 0, 0.55),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+/* 側面の木目パネル */
+.device::before,
+.device::after {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  width: 14px;
+  background: linear-gradient(180deg, var(--wood), var(--wood-dark));
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+.device::before {
+  left: -7px;
+  border-radius: 6px 0 0 6px;
+}
+.device::after {
+  right: -7px;
+  border-radius: 0 6px 6px 0;
+}
+
+.device-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.brand-name {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.brand-sub {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--ink-soft);
+  margin-top: 3px;
+}
+
+.power-lamp {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #6e3b2a;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2) inset;
+  transition: all 0.4s;
+}
+.power-lamp.on {
+  background: var(--amber);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.2) inset,
+    0 0 10px 2px var(--amber-glow);
+}
+
+/* ===== テープ窓 ===== */
+.tape-window {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(180deg, #1c1814, #2b2620);
+  border-radius: 12px;
+  padding: 20px 26px;
+  border: 1px solid #000;
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.5) inset,
+    0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.reel {
+  width: 120px;
+  height: 120px;
+  flex: 0 0 auto;
+}
+.reel-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.reel-svg.spin {
+  animation: reel-spin 3.2s linear infinite;
+  transform-origin: 50% 50%;
+}
+@keyframes reel-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.reel-tape {
+  fill: var(--tape);
+}
+.reel-tape-edge {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1;
+  opacity: 0.6;
+}
+.reel-hub {
+  fill: var(--metal);
+}
+.reel-spoke {
+  fill: var(--metal-dark);
+}
+.reel-center {
+  fill: #2c2822;
+  stroke: var(--metal-dark);
+  stroke-width: 2;
+}
+
+/* リール間のスクリーン（生成ビジュアルを流す） */
+.screen {
+  flex: 1 1 auto;
+  align-self: center;
+  height: 104px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0a0c10;
+  border: 1px solid #000;
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.6) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  position: relative;
+}
+/* 画面のガラスっぽい反射＆ビネット */
+.screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 30%),
+    radial-gradient(120% 80% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.5));
+}
+.visual-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ===== つまみ ===== */
+.knob-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 22px;
+  padding: 0 4px;
+}
+
+.knob {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 0;
+}
+.knob-dial {
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #4a463f, #1e1b17);
+  box-shadow:
+    0 2px 5px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.15) inset,
+    0 0 0 4px var(--panel-dark),
+    0 0 0 5px var(--panel-line);
+  cursor: ns-resize;
+  touch-action: none;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.knob-dial:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 4px;
+}
+.knob-face {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.knob-indicator {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  width: 3px;
+  height: 30%;
+  background: var(--amber);
+  border-radius: 2px;
+  transform: translateX(-50%);
+  box-shadow: 0 0 6px var(--amber-glow);
+}
+.knob-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--ink-soft);
+}
+.knob-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink);
+  min-height: 14px;
+  text-align: center;
+}
+
+/* ===== 操作 ===== */
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+.play-btn {
+  flex: 1 1 auto;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  color: #fff7ec;
+  background: linear-gradient(180deg, #7a4a32, var(--wood-dark));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 4px 10px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: transform 0.05s, filter 0.2s;
+}
+.play-btn:hover {
+  filter: brightness(1.08);
+}
+.play-btn:active {
+  transform: translateY(1px);
+}
+.play-btn.playing {
+  background: linear-gradient(180deg, var(--accent), #8c3a1f);
+}
+.volume-knob {
+  flex: 0 0 auto;
+}
+.volume-knob .knob-label {
+  font-size: 9px;
+}
+.mute-btn {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  font-size: 20px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #cfc4ac, #b3a685);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 3px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+.mute-btn:active {
+  transform: translateY(1px);
+}
+
+/* ===== 雨レイヤー ===== */
+.rain-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  border: 1px solid var(--panel-line);
+}
+.rain-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--panel-line);
+  background: linear-gradient(180deg, #cfc4ac, #b3a685);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.rain-toggle .rain-icon {
+  font-size: 16px;
+  filter: grayscale(1) opacity(0.6);
+}
+.rain-toggle .rain-state {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.15);
+}
+.rain-toggle.on {
+  background: linear-gradient(180deg, #3f5d7a, #2b4055);
+  color: #eaf2fb;
+  border-color: #1f2e3d;
+  box-shadow: 0 0 12px rgba(90, 140, 190, 0.4);
+}
+.rain-toggle.on .rain-icon {
+  filter: none;
+}
+.rain-toggle.on .rain-state {
+  background: rgba(255, 255, 255, 0.2);
+}
+.rain-knob {
+  transition: opacity 0.2s;
+}
+.rain-knob.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ===== プリセット ===== */
+.preset-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--panel-line);
+}
+.preset-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--ink-soft);
+  margin-right: 4px;
+}
+.preset-btn {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--panel-line);
+  background: rgba(255, 255, 255, 0.25);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+.preset-btn.active {
+  background: var(--wood);
+  color: #fff7ec;
+  border-color: var(--wood-dark);
+}
+
+.hint {
+  font-size: 12px;
+  color: #b8ad97;
+  text-align: center;
+  max-width: 520px;
+  margin: 0;
+}
