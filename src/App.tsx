@@ -166,7 +166,7 @@ export default function App() {
         onToggleRecord={toggleRecord}
       />
       <p className="hint">
-        ▶ PLAY で再生。ツマミを回すと音のテイストが変わります（ドラッグ／ホイール）。
+        Press PLAY to start. Turn the knobs to shape the sound (drag or scroll).
       </p>
     </div>
   )

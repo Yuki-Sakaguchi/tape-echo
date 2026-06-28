@@ -64,7 +64,7 @@ export function TapeEcho({
           <span className="brand-name">ECHOREra</span>
           <span className="brand-sub">TAPE ECHO · AMBIENT GENERATOR</span>
         </div>
-        <div className={`power-lamp ${playing ? 'on' : ''}`} title={playing ? '再生中' : '停止'} />
+        <div className={`power-lamp ${playing ? 'on' : ''}`} title={playing ? 'Playing' : 'Stopped'} />
       </header>
 
       {/* テープ窓：両脇のリールが再生中だけ回り、中央のスクリーンに映像を流す */}
@@ -112,10 +112,10 @@ export function TapeEcho({
             disabled={processing}
             title={
               processing
-                ? 'ループに書き出し中'
+                ? 'Exporting loop…'
                 : recording
-                  ? '録音停止してループWAVをダウンロード'
-                  : '録音開始'
+                  ? 'Stop & download loop WAV'
+                  : 'Start recording'
             }
           >
             <span className="rec-dot" />
@@ -126,7 +126,7 @@ export function TapeEcho({
             <button
               className={`mute-btn ${muted ? 'muted' : ''}`}
               onClick={onToggleMute}
-              title={muted ? 'ミュート解除' : 'ミュート'}
+              title={muted ? 'Unmute' : 'Mute'}
             >
               {muted ? '🔇' : '🔊'}
             </button>

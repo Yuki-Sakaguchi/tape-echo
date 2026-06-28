@@ -4,10 +4,10 @@
 
 /** スケール（半音オフセット）。Mood ツマミで切り替える。 */
 export const SCALES: { id: string; label: string; offsets: number[] }[] = [
-  { id: 'melancholy', label: 'もの悲しい', offsets: [0, 3, 5, 7, 10] }, // マイナーペンタ
-  { id: 'bright', label: '明るい', offsets: [0, 2, 4, 7, 9] }, // メジャーペンタ
-  { id: 'dreamy', label: '幻想的', offsets: [0, 2, 4, 7, 11] }, // メジャー7th 系
-  { id: 'mystic', label: '神秘的', offsets: [0, 2, 5, 7, 9] }, // サスっぽい浮遊感
+  { id: 'melancholy', label: 'Melancholy', offsets: [0, 3, 5, 7, 10] }, // マイナーペンタ
+  { id: 'bright', label: 'Bright', offsets: [0, 2, 4, 7, 9] }, // メジャーペンタ
+  { id: 'dreamy', label: 'Dreamy', offsets: [0, 2, 4, 7, 11] }, // メジャー7th 系
+  { id: 'mystic', label: 'Mystic', offsets: [0, 2, 5, 7, 9] }, // サスっぽい浮遊感
 ]
 
 /** 外から調整できるパラメータ。mood 以外は 0..1 に正規化。 */
